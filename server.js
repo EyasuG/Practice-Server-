@@ -31,6 +31,7 @@ Location.findOne({ address:req.query.address}, (err,addr) =>{
       else {
       superagent.get(url) // is a third party library that requests data for us with its methods 
         .then(result => {
+          console.log(result)
           const newLocation= new Location({
             address:req.query.address,
           lat:result.body.results[0].geometry.location.lat,
