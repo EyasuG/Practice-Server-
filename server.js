@@ -65,7 +65,7 @@ app.get('/weather', (req, res) => {
      superagent.get(weatherUrl) // is a third party library that requests data for us with its methods 
         .then(result => {
           //console.log(result)
-          res.send({
+          const temp= new temperature({
             latitude:result.body.latitude,
             time: result.body.currently.time,
             summary : result.body.currently.summary,
@@ -73,8 +73,6 @@ app.get('/weather', (req, res) => {
             temp :result.body.currently.temperature
           
           })
-          
-         
           temp.save()
          console.log('created new temp')
          
@@ -82,4 +80,20 @@ app.get('/weather', (req, res) => {
         res.send(temp)
       }) 
         
-           
+app.get('/movie', (req, res) =>{
+const movieUrl= `https://api.themoviedb.org/3/search/movie?api_key=${process.env.THE_MOVIE_DB_API_KEY}&query=${req.query.query}`
+superagent.get(movieUrl)
+.then(result=>{
+  const movies = new moviesearch({
+      title:result.body.results[0].title,
+      overview:result.body.results[0].overview,
+      average_vote:result.body.results[0].vote_average,
+      total_vote:result.body.results[0].vote_count,
+      image_url:result.body.results[0].homepage,
+      popularity:result.body.results[0].popularity,
+      released_on:result.body.results[0].release_date
+     })
+     movies.save()
+  })
+  res.send(movies)
+})
