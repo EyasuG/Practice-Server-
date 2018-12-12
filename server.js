@@ -4,14 +4,14 @@ const superagent = require('superagent')
 const mongoose = require('mongoose')
 
 const { Schema, model}= mongoose //cost thisSchema = mongoose.Schema 
-mongoose.connect(mongoURL)
+
 require('dotenv').config()
 const mongoURL = `mongodb://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@ds161960.mlab.com:61960/eyasub`
 mongoose.connect(mongoURL)
 const db = mongoose.connection
 db.on('error',console.error.bind(console,'connection errror:'))
 db.once('open', ()=> {
-console.log('DB connection open!')
+console.log('DB connection open!')})
 
 const cors = require('cors') //cross origin resource sharing [Enables us to share data for security purposes]
 const PORT = process.env.PORT || 3000
@@ -22,8 +22,8 @@ app.get('/location', (req, res) => {
  const url =
     // `https://maps.googleapis.com/maps/api/geocode/json?address=1600+Amphitheatre+Parkway,+Mountain+View,+CA&key=${process.env.GOOGLE_API_KEY}` // /*static
 
-    `https://maps.googleapis.com/maps/api/geocode/json?address=${req.query.address}&key=${process.env.GOOGLE_API_KEY}` //Dynamic
-    Location.findOne({ address:req.query.address}, (err,addr) =>{
+    `https://maps.googleapis.com/maps/api/geocode/json?address=${req.query.address}&key=${process.env.GOOGLE_API_KEY}`//Dynamic
+Location.findOne({ address:req.query.address}, (err,addr) =>{
       if(addr) {
         console.log('address found') 
         res.send(addr)
@@ -31,10 +31,11 @@ app.get('/location', (req, res) => {
       else {
       superagent.get(url) // is a third party library that requests data for us with its methods 
         .then(result => {
+          console.log(result)
           const newLocation= new Location({
             address:req.query.address,
           lat:result.body.results[0].geometry.location.lat,
-          lng:result.body.results[0].geometry.location.lat
+          lng:result.body.results[0].geometry.location.lng
           })
           newLocation.save()
           console.log('created new address')
@@ -47,15 +48,38 @@ app.get('/location', (req, res) => {
 app.get('/', (req, res) => {res.send('Listening to port')
 })
 app.use('*', (req, res) => {
-  res.send('<img src="https://http.cat/404"/>')
+  res.send('<img src="https://http.cat/408"/>')
 })
 app.listen(PORT, () => {
   console.log(`Listening to port ${PORT}`)// the server is listening to the request and the response
-})
-//For the dynamic location listening by the server 
+})//For the dynamic location listening by the server 
 const LocationSchema = new Schema({
  address: String,
 lat: Number,
 lng: Number 
  })
-const Location= model('Location', LocationSchema)
+const Location = model('Location', LocationSchema)
+
+app.get('/weather', (req, res) => {
+  const weatherUrl =`https://api.darksky.net/forecast/${process.env.DARK_SKY_API}/${req.query.latitude},${req.query.longitude}`
+     superagent.get(weatherUrl) // is a third party library that requests data for us with its methods 
+        .then(result => {
+          //console.log(result)
+          res.send({
+            latitude:result.body.latitude,
+            time: result.body.currently.time,
+            summary : result.body.currently.summary,
+            icon : result.body.currently.icon,
+            temp :result.body.currently.temperature
+          
+          })
+          
+         
+          temp.save()
+         console.log('created new temp')
+         
+        })
+        res.send(temp)
+      }) 
+        
+           
